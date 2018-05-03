@@ -8,4 +8,4 @@
 
 / HomeR GET
 
-/media MediaR GET
+/media MediaR GET POST

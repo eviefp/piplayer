@@ -29,36 +29,38 @@ import           Yesod.Default.Util         (WidgetFileSettings,
 -- loaded from various sources: defaults, environment variables, config files,
 -- theoretically even a database.
 data AppSettings = AppSettings
-    { appStaticDir              :: String
+    { appStaticDir              ∷ String
     -- ^ Directory from which to serve static files.
-    , appRoot                   :: Maybe Text
+    , appRoot                   ∷ Maybe Text
     -- ^ Base for all generated URLs. If @Nothing@, determined
     -- from the request headers.
-    , appHost                   :: HostPreference
+    , appHost                   ∷ HostPreference
     -- ^ Host/interface the server should bind to.
-    , appPort                   :: Int
+    , appPort                   ∷ Int
     -- ^ Port to listen on
-    , appIpFromHeader           :: Bool
+    , appIpFromHeader           ∷ Bool
     -- ^ Get the IP address from the header when logging. Useful when sitting
     -- behind a reverse proxy.
 
-    , appDetailedRequestLogging :: Bool
+    , appDetailedRequestLogging ∷ Bool
     -- ^ Use detailed request logging system
-    , appShouldLogAll           :: Bool
+    , appShouldLogAll           ∷ Bool
     -- ^ Should all log messages be displayed?
-    , appReloadTemplates        :: Bool
+    , appReloadTemplates        ∷ Bool
     -- ^ Use the reload version of templates
-    , appMutableStatic          :: Bool
+    , appMutableStatic          ∷ Bool
     -- ^ Assume that files in the static dir may change after compilation
-    , appSkipCombining          :: Bool
+    , appSkipCombining          ∷ Bool
     -- ^ Perform no stylesheet/script combining
 
     -- Example app-specific configuration values.
-    , appCopyright              :: Text
+    , appCopyright              ∷ Text
     -- ^ Copyright text to appear in the footer of the page
-    , appAnalytics              :: Maybe Text
+    , appAnalytics              ∷ Maybe Text
     -- ^ Google Analytics code
-    , appMediaFolders           :: [FilePath]
+    , appMediaFolders           ∷ [FilePath]
+    , appRPIAddress             ∷ String
+    , appRPIPort                ∷ String
     }
 
 instance FromJSON AppSettings where
@@ -69,24 +71,26 @@ instance FromJSON AppSettings where
 #else
                 False
 #endif
-        appStaticDir              <- o .: "static-dir"
-        appRoot                   <- o .:? "approot"
-        appHost                   <- fromString <$> o .: "host"
-        appPort                   <- o .: "port"
-        appIpFromHeader           <- o .: "ip-from-header"
+        appStaticDir              ← o .: "static-dir"
+        appRoot                   ← o .:? "approot"
+        appHost                   ← fromString <$> o .: "host"
+        appPort                   ← o .: "port"
+        appIpFromHeader           ← o .: "ip-from-header"
 
-        dev                       <- o .:? "development"      .!= defaultDev
+        dev                       ← o .:? "development"      .!= defaultDev
 
-        appDetailedRequestLogging <- o .:? "detailed-logging" .!= dev
-        appShouldLogAll           <- o .:? "should-log-all"   .!= dev
-        appReloadTemplates        <- o .:? "reload-templates" .!= dev
-        appMutableStatic          <- o .:? "mutable-static"   .!= dev
-        appSkipCombining          <- o .:? "skip-combining"   .!= dev
+        appDetailedRequestLogging ← o .:? "detailed-logging" .!= dev
+        appShouldLogAll           ← o .:? "should-log-all"   .!= dev
+        appReloadTemplates        ← o .:? "reload-templates" .!= dev
+        appMutableStatic          ← o .:? "mutable-static"   .!= dev
+        appSkipCombining          ← o .:? "skip-combining"   .!= dev
 
-        appCopyright              <- o .: "copyright"
-        appAnalytics              <- o .:? "analytics"
+        appCopyright              ← o .: "copyright"
+        appAnalytics              ← o .:? "analytics"
 
-        appMediaFolders           <- o .: "media-folders"
+        appMediaFolders           ← o .: "media-folders"
+        appRPIAddress             ← o .: "rpi-address"
+        appRPIPort                ← o .: "rpi-port"
 
         return AppSettings {..}
 
