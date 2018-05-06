@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveAnyClass        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE NoImplicitPrelude     #-}
 {-# LANGUAGE OverloadedStrings     #-}
@@ -15,6 +16,14 @@ import           Network.Socket.ByteString (sendAll)
 import           System.Directory.Extra    (listFilesRecursive)
 
 
+data Messages
+  = Play FilePath
+  | PauseOrResume
+  | VolumeUp
+  | VolumeDown
+  | NextSubtitle
+  deriving (Show, Generic, ToJSON, FromJSON)
+
 getMediaR :: Handler Value
 getMediaR = do
     settings <- appSettings <$> getYesod
@@ -23,11 +32,12 @@ getMediaR = do
 
 postMediaR ∷ Handler Value
 postMediaR = do
+  message ← requireJsonBody ∷ Handler Messages
   settings ← appSettings <$> getYesod
   liftIO $ withSocketsDo $ do
     addr ← resolve (appRPIAddress settings) (appRPIPort settings)
-    bracket (open addr) close sendMessage
-  returnJson ("hello" ∷ String)
+    bracket (open addr) close (sendMessage . show $ message)
+  returnJson message
 
   where
 
@@ -41,5 +51,5 @@ postMediaR = do
     NS.connect sock $ addrAddress addr
     return sock
 
-  sendMessage sock = do
-    sendAll sock (BSC.pack "Hello, world!")
+  sendMessage msg sock =
+    sendAll sock (BSC.pack msg)
